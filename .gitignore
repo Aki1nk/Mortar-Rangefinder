@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+TestResults/
+artifacts/
+.superpowers/
+*.user
+*.suo
+.dotnet/
+.tools/
