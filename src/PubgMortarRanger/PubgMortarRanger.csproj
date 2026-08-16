@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\assets\PubgMortarRanger.ico</ApplicationIcon>
+    <AssemblyName>MortarRangefinder</AssemblyName>
+    <AssemblyTitle>Mortar Rangefinder</AssemblyTitle>
+    <Product>Mortar Rangefinder</Product>
+    <RootNamespace>PubgMortarRanger</RootNamespace>
+  </PropertyGroup>
+
+</Project>
