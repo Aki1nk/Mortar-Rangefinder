@@ -10,7 +10,7 @@
     <AssemblyName>MortarRangefinder</AssemblyName>
     <AssemblyTitle>Mortar Rangefinder</AssemblyTitle>
     <Product>Mortar Rangefinder</Product>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <RootNamespace>PubgMortarRanger</RootNamespace>
   </PropertyGroup>
 

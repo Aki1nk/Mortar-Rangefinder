@@ -32,7 +32,7 @@ $sections = @(
         '点击主窗口的“设置”打开设置界面。',
         '点击热键输入框后直接按下新的组合键，保存后主窗口会立即显示新的键名。',
         '可在设置中调整最小和最大射程；相同的热键不能重复分配。',
-        '默认按 F12 播放本地语音提示；可在设置中关闭或改为其他热键。'
+        '默认按 Ctrl+F12 播放本地语音提示；可在设置中关闭或改为其他热键。'
     )},
     @{ Heading = '5. 多显示器'; Lines = @(
         '选点遮罩会覆盖所有已连接显示器，鼠标可跨屏点击。',
@@ -54,7 +54,7 @@ function Escape-Xml([string]$Value) {
 
 $paragraphs = [System.Collections.Generic.List[string]]::new()
 $paragraphs.Add(('<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="36"/></w:rPr><w:t>') + (Escape-Xml $title) + '</w:t></w:r></w:p>') | Out-Null
-$paragraphs.Add('<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:color w:val="666666"/></w:rPr><w:t>版本 0.2.0 · 2026-08-21 · Windows 10/11 x64</w:t></w:r></w:p>') | Out-Null
+$paragraphs.Add('<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:color w:val="666666"/></w:rPr><w:t>版本 0.2.1 · 2026-08-21 · Windows 10/11 x64</w:t></w:r></w:p>') | Out-Null
 $paragraphs.Add('<w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>') | Out-Null
 
 foreach ($section in $sections) {
@@ -144,7 +144,7 @@ li { margin-bottom: 5px; }
 </head>
 <body>
 <h1>$title</h1>
-<p class="meta">版本 0.2.0 · 2026-08-21 · Windows 10/11 x64</p>
+<p class="meta">版本 0.2.1 · 2026-08-21 · Windows 10/11 x64</p>
 $($htmlSections -join "`n")
 </body>
 </html>

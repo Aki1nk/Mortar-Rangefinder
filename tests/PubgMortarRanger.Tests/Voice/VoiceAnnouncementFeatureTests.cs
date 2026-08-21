@@ -7,7 +7,7 @@ namespace PubgMortarRanger.Tests.Voice;
 public sealed class VoiceAnnouncementFeatureTests
 {
     [Fact]
-    public void VoiceAnnouncementFeature_HasEnabledSettingAndF12Hotkey()
+    public void VoiceAnnouncementFeature_HasEnabledSettingAndCtrlF12Hotkey()
     {
         var enabledProperty = typeof(AppSettings).GetProperty("VoiceAnnouncementEnabled");
 
@@ -15,7 +15,7 @@ public sealed class VoiceAnnouncementFeatureTests
         Assert.True((bool)enabledProperty.GetValue(AppSettings.CreateDefault())!);
         Assert.True(Enum.TryParse<HotkeyAction>("PlayVoiceAnnouncement", out var action));
         Assert.Equal(
-            new HotkeyGesture(HotkeyModifiers.None, 0x7B),
+            new HotkeyGesture(HotkeyModifiers.Control, 0x7B),
             AppSettings.CreateDefault().Hotkeys[action]);
     }
 

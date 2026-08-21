@@ -4,6 +4,20 @@ namespace PubgMortarRanger.Input;
 
 public static class HotkeyDisplayFormatter
 {
+    public static string FormatAction(HotkeyAction action) => action switch
+    {
+        HotkeyAction.RecordMortar => "记录炮位",
+        HotkeyAction.RecordTarget => "记录目标",
+        HotkeyAction.BeginClickSelection => "点击选点",
+        HotkeyAction.BeginCalibration => "开始标定",
+        HotkeyAction.ClearMeasurement => "清除结果",
+        HotkeyAction.ToggleOverlay => "显示/隐藏",
+        HotkeyAction.ToggleClickThrough => "鼠标穿透",
+        HotkeyAction.PlayVoiceAnnouncement => "语音提示",
+        HotkeyAction.Recalibrate => "重新标定",
+        _ => "取消当前操作"
+    };
+
     public static string Format(HotkeyGesture gesture)
     {
         var parts = new List<string>();

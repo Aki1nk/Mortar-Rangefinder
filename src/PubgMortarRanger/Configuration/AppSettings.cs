@@ -5,6 +5,10 @@ namespace PubgMortarRanger.Configuration;
 
 public sealed record AppSettings
 {
+    public const int CurrentSettingsVersion = 2;
+
+    public int SettingsVersion { get; init; }
+
     public double MinimumRangeMeters { get; init; } = 121;
 
     public double MaximumRangeMeters { get; init; } = 700;
@@ -28,5 +32,8 @@ public sealed record AppSettings
     public IReadOnlyDictionary<HotkeyAction, HotkeyGesture> Hotkeys { get; init; } =
         HotkeyGesture.CreateDefaults();
 
-    public static AppSettings CreateDefault() => new();
+    public static AppSettings CreateDefault() => new()
+    {
+        SettingsVersion = CurrentSettingsVersion
+    };
 }

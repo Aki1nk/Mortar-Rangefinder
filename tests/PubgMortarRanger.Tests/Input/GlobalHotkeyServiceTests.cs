@@ -71,6 +71,22 @@ public sealed class GlobalHotkeyServiceTests
             registrar.Registrations);
     }
 
+    [Fact]
+    public void Apply_IdentifiesTheRejectedHotkey()
+    {
+        var failingGesture = new HotkeyGesture(HotkeyModifiers.Control, 0x7B);
+        var registrar = new FakeHotkeyRegistrar(failingGesture);
+        using var service = new GlobalHotkeyService(registrar);
+        var bindings = HotkeyGesture.CreateDefaults().ToDictionary();
+        bindings[HotkeyAction.PlayVoiceAnnouncement] = failingGesture;
+
+        var result = service.Apply(bindings);
+
+        Assert.False(result.IsValid);
+        Assert.Contains("语音提示", result.ErrorMessage);
+        Assert.Contains("Ctrl + F12键", result.ErrorMessage);
+    }
+
     private sealed class FakeHotkeyRegistrar(HotkeyGesture? failingGesture = null)
         : IHotkeyRegistrar
     {

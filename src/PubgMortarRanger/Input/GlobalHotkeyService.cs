@@ -23,7 +23,10 @@ public sealed class GlobalHotkeyService(IHotkeyRegistrar registrar) : IDisposabl
         var previousBindings = _activeBindings.ToDictionary();
         UnregisterAll(previousBindings.Keys);
 
-        if (TryRegisterAll(bindings, out var registeredActions))
+        if (TryRegisterAll(
+                bindings,
+                out var registeredActions,
+                out var failedAction))
         {
             _activeBindings = bindings.ToDictionary();
             _isSuspended = false;
@@ -31,12 +34,14 @@ public sealed class GlobalHotkeyService(IHotkeyRegistrar registrar) : IDisposabl
         }
 
         UnregisterAll(registeredActions);
-        TryRegisterAll(previousBindings, out _);
+        TryRegisterAll(previousBindings, out _, out _);
         _activeBindings = previousBindings;
         _isSuspended = false;
 
-        return HotkeyValidationResult.Failure(
-            "Windows rejected a hotkey registration; previous bindings were restored.");
+        return CreateRegistrationFailure(
+            failedAction,
+            bindings,
+            "之前的热键设置已恢复。");
     }
 
     public void Suspend()
@@ -57,15 +62,20 @@ public sealed class GlobalHotkeyService(IHotkeyRegistrar registrar) : IDisposabl
             return HotkeyValidationResult.Success;
         }
 
-        if (TryRegisterAll(_activeBindings, out var registeredActions))
+        if (TryRegisterAll(
+                _activeBindings,
+                out var registeredActions,
+                out var failedAction))
         {
             _isSuspended = false;
             return HotkeyValidationResult.Success;
         }
 
         UnregisterAll(registeredActions);
-        return HotkeyValidationResult.Failure(
-            "Windows rejected a hotkey registration; hotkeys remain suspended.");
+        return CreateRegistrationFailure(
+            failedAction,
+            _activeBindings,
+            "热键目前保持暂停状态。");
     }
 
     public void Dispose()
@@ -77,14 +87,17 @@ public sealed class GlobalHotkeyService(IHotkeyRegistrar registrar) : IDisposabl
 
     private bool TryRegisterAll(
         IReadOnlyDictionary<HotkeyAction, HotkeyGesture> bindings,
-        out List<HotkeyAction> registeredActions)
+        out List<HotkeyAction> registeredActions,
+        out HotkeyAction? failedAction)
     {
         registeredActions = [];
+        failedAction = null;
 
         foreach (var (action, gesture) in bindings.Where(pair => pair.Value.IsGlobal))
         {
             if (!_registrar.TryRegister(ToRegistrationId(action), gesture))
             {
+                failedAction = action;
                 return false;
             }
 
@@ -92,6 +105,23 @@ public sealed class GlobalHotkeyService(IHotkeyRegistrar registrar) : IDisposabl
         }
 
         return true;
+    }
+
+    private static HotkeyValidationResult CreateRegistrationFailure(
+        HotkeyAction? failedAction,
+        IReadOnlyDictionary<HotkeyAction, HotkeyGesture> bindings,
+        string suffix)
+    {
+        if (failedAction is not { } action ||
+            !bindings.TryGetValue(action, out var gesture))
+        {
+            return HotkeyValidationResult.Failure(
+                $"Windows 拒绝注册热键。{suffix}");
+        }
+
+        return HotkeyValidationResult.Failure(
+            $"Windows 拒绝注册“{HotkeyDisplayFormatter.FormatAction(action)}”热键" +
+            $"（{HotkeyDisplayFormatter.Format(gesture)}），该按键可能已被其他程序占用。{suffix}");
     }
 
     private void UnregisterAll(IEnumerable<HotkeyAction> actions)

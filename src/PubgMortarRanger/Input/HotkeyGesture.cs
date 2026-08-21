@@ -33,7 +33,7 @@ public sealed record HotkeyGesture(
                     0x1B,
                     IsGlobal: false),
                 [HotkeyAction.PlayVoiceAnnouncement] = new(
-                    HotkeyModifiers.None,
+                    HotkeyModifiers.Control,
                     0x7B),
                 [HotkeyAction.Recalibrate] = new(
                     HotkeyModifiers.Control,

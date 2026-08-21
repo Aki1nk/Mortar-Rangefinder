@@ -1,5 +1,5 @@
 #define AppName "Mortar Rangefinder"
-#define AppVersion "0.2.0"
+#define AppVersion "0.2.1"
 #define AppPublisher "Personal Use"
 #define AppExeName "MortarRangefinder.exe"
 
@@ -21,6 +21,9 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayName={#AppName}
 SetupIconFile=..\assets\PubgMortarRanger.ico
+
+[InstallDelete]
+Type: files; Name: "{app}\HD_MortarRangefinder.exe"
 
 [Files]
 Source: "..\artifacts\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

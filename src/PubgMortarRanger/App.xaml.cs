@@ -52,7 +52,13 @@ public partial class App : System.Windows.Application
         var source = (HwndSource)PresentationSource.FromVisual(_window!)!;
         source.AddHook(WindowMessageHook);
         _hotkeys = new GlobalHotkeyService(new WindowsHotkeyRegistrar(source.Handle));
-        _hotkeys.Apply(bindings);
+        var result = _hotkeys.Apply(bindings);
+        if (!result.IsValid)
+        {
+            System.Windows.MessageBox.Show(
+                result.ErrorMessage,
+                "热键注册失败");
+        }
     }
 
     private nint WindowMessageHook(

@@ -68,6 +68,11 @@ public sealed class SettingsService
 
     private static AppSettings Validate(AppSettings settings)
     {
+        if (settings.SettingsVersion != AppSettings.CurrentSettingsVersion)
+        {
+            throw new JsonException("SettingsVersion is unsupported.");
+        }
+
         ValidateHotkeys(settings.Hotkeys);
         ValidatePlacement(settings.OverlayPlacement);
         ValidateCalibration(settings.Calibration);
@@ -123,11 +128,6 @@ public sealed class SettingsService
             .Where(action => !settings.Hotkeys.ContainsKey(action))
             .ToArray();
 
-        if (missingActions.Length == 0)
-        {
-            return settings;
-        }
-
         var upgradeableActions = new[]
         {
             HotkeyAction.PlayVoiceAnnouncement,
@@ -145,7 +145,22 @@ public sealed class SettingsService
             hotkeys[action] = HotkeyGesture.CreateDefaults()[action];
         }
 
-        return settings with { Hotkeys = hotkeys };
+        var oldReservedVoiceHotkey = new HotkeyGesture(HotkeyModifiers.None, 0x7B);
+        if (settings.SettingsVersion < AppSettings.CurrentSettingsVersion &&
+            hotkeys.TryGetValue(
+                HotkeyAction.PlayVoiceAnnouncement,
+                out var voiceHotkey) &&
+            voiceHotkey == oldReservedVoiceHotkey)
+        {
+            hotkeys[HotkeyAction.PlayVoiceAnnouncement] =
+                HotkeyGesture.CreateDefaults()[HotkeyAction.PlayVoiceAnnouncement];
+        }
+
+        return settings with
+        {
+            SettingsVersion = AppSettings.CurrentSettingsVersion,
+            Hotkeys = hotkeys
+        };
     }
 
     private void BackUpCorruptFile()

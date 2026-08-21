@@ -19,6 +19,7 @@ public sealed class SettingsServiceTests : IDisposable
         var settings = await service.LoadAsync();
 
         Assert.Equal(121, settings.MinimumRangeMeters);
+        Assert.Equal(AppSettings.CurrentSettingsVersion, settings.SettingsVersion);
         Assert.Equal(700, settings.MaximumRangeMeters);
         Assert.Equal(20, settings.HistoryLimit);
         Assert.Equal(0.94, settings.OverlayOpacity);
@@ -760,7 +761,7 @@ public sealed class SettingsServiceTests : IDisposable
 
         Assert.False(settings.VoiceAnnouncementEnabled);
         Assert.Equal(
-            new HotkeyGesture(HotkeyModifiers.None, 0x7B),
+            new HotkeyGesture(HotkeyModifiers.Control, 0x7B),
             settings.Hotkeys[HotkeyAction.PlayVoiceAnnouncement]);
         Assert.Empty(Directory.GetFiles(_directory, "settings.corrupt-*.json"));
     }
@@ -773,6 +774,7 @@ public sealed class SettingsServiceTests : IDisposable
             .ToDictionary();
         var existingSettings = AppSettings.CreateDefault() with
         {
+            SettingsVersion = 1,
             Hotkeys = existingHotkeys
         };
         var serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
@@ -788,6 +790,33 @@ public sealed class SettingsServiceTests : IDisposable
         Assert.Equal(
             new HotkeyGesture(HotkeyModifiers.Control, 0x77),
             settings.Hotkeys[HotkeyAction.Recalibrate]);
+        Assert.Empty(Directory.GetFiles(_directory, "settings.corrupt-*.json"));
+    }
+
+    [Fact]
+    public async Task LoadAsync_UpgradesReservedDefaultF12VoiceHotkey()
+    {
+        var existingHotkeys = HotkeyGesture.CreateDefaults().ToDictionary();
+        existingHotkeys[HotkeyAction.PlayVoiceAnnouncement] =
+            new HotkeyGesture(HotkeyModifiers.None, 0x7B);
+        var existingSettings = AppSettings.CreateDefault() with
+        {
+            SettingsVersion = 1,
+            Hotkeys = existingHotkeys
+        };
+        var serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        serializerOptions.Converters.Add(
+            new JsonStringEnumConverter(allowIntegerValues: false));
+        Directory.CreateDirectory(_directory);
+        await File.WriteAllTextAsync(
+            Path.Combine(_directory, "settings.json"),
+            JsonSerializer.Serialize(existingSettings, serializerOptions));
+
+        var settings = await new SettingsService(_directory).LoadAsync();
+
+        Assert.Equal(
+            new HotkeyGesture(HotkeyModifiers.Control, 0x7B),
+            settings.Hotkeys[HotkeyAction.PlayVoiceAnnouncement]);
         Assert.Empty(Directory.GetFiles(_directory, "settings.corrupt-*.json"));
     }
 
@@ -842,7 +871,7 @@ public sealed class SettingsServiceTests : IDisposable
             [HotkeyAction.ToggleOverlay] = new(HotkeyModifiers.None, 0x7A),
             [HotkeyAction.ToggleClickThrough] = new(HotkeyModifiers.Control, 0x7A),
             [HotkeyAction.CancelCurrent] = new(HotkeyModifiers.None, 0x1B, IsGlobal: false),
-            [HotkeyAction.PlayVoiceAnnouncement] = new(HotkeyModifiers.None, 0x7B),
+            [HotkeyAction.PlayVoiceAnnouncement] = new(HotkeyModifiers.Control, 0x7B),
             [HotkeyAction.Recalibrate] = new(HotkeyModifiers.Control, 0x77)
         };
 
@@ -852,6 +881,7 @@ public sealed class SettingsServiceTests : IDisposable
     private static void AssertSettingsEqual(AppSettings expected, AppSettings actual)
     {
         Assert.Equal(expected.MinimumRangeMeters, actual.MinimumRangeMeters);
+        Assert.Equal(expected.SettingsVersion, actual.SettingsVersion);
         Assert.Equal(expected.MaximumRangeMeters, actual.MaximumRangeMeters);
         Assert.Equal(expected.HistoryLimit, actual.HistoryLimit);
         Assert.Equal(expected.OverlayOpacity, actual.OverlayOpacity);
