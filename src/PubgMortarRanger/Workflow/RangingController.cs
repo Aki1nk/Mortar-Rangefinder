@@ -13,6 +13,7 @@ public sealed class RangingController
 
     public RangingState State { get; private set; } = RangingState.Uncalibrated;
     public CalibrationProfile? Calibration { get; private set; }
+    public GuideSegment? GuideSegment { get; private set; }
     public ScreenPoint? PendingMortarPoint { get; private set; }
     public MeasurementResult? LastMeasurement { get; private set; }
     public event EventHandler? Changed;
@@ -20,6 +21,7 @@ public sealed class RangingController
     public void SetCalibration(CalibrationProfile? calibration)
     {
         Calibration = calibration;
+        GuideSegment = null;
         ResetTransientState();
         State = calibration is null ? RangingState.Uncalibrated : RangingState.Ready;
         RaiseChanged();
@@ -27,6 +29,8 @@ public sealed class RangingController
 
     public void BeginCalibration()
     {
+        LastMeasurement = null;
+        GuideSegment = null;
         ResetTransientState();
         State = RangingState.AwaitingCalibrationFirstPoint;
         RaiseChanged();
@@ -50,6 +54,7 @@ public sealed class RangingController
     public void BeginClickMeasurement()
     {
         EnsureCalibrated();
+        GuideSegment = null;
         PendingMortarPoint = null;
         State = RangingState.AwaitingMortarPoint;
         RaiseChanged();
@@ -58,6 +63,7 @@ public sealed class RangingController
     public void RecordMortar(ScreenPoint point)
     {
         EnsureCalibrated();
+        GuideSegment = null;
         PendingMortarPoint = point;
         State = RangingState.AwaitingTargetPoint;
         RaiseChanged();
@@ -72,6 +78,7 @@ public sealed class RangingController
         }
 
         var result = Measure(mortarPoint, point);
+        GuideSegment = new GuideSegment(mortarPoint, point);
         PendingMortarPoint = null;
         LastMeasurement = result;
         State = RangingState.ShowingResult;
@@ -90,6 +97,10 @@ public sealed class RangingController
                 return null;
             case RangingState.AwaitingCalibrationSecondPoint:
                 _pendingCalibrationSecondPoint = point;
+                GuideSegment = new GuideSegment(
+                    _pendingCalibrationFirstPoint ?? throw new InvalidOperationException(
+                        "请先记录第一个标定点。"),
+                    point);
                 State = RangingState.AwaitingCalibrationDistance;
                 RaiseChanged();
                 return null;
@@ -124,6 +135,7 @@ public sealed class RangingController
     public void ClearMeasurement()
     {
         LastMeasurement = null;
+        GuideSegment = null;
         PendingMortarPoint = null;
         State = Calibration is null ? RangingState.Uncalibrated : RangingState.Ready;
         RaiseChanged();
@@ -131,6 +143,7 @@ public sealed class RangingController
 
     public void Cancel()
     {
+        GuideSegment = null;
         ResetTransientState();
         State = Calibration is null ? RangingState.Uncalibrated : RangingState.Ready;
         RaiseChanged();

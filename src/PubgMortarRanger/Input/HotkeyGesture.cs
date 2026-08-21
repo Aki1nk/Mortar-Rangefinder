@@ -34,7 +34,10 @@ public sealed record HotkeyGesture(
                     IsGlobal: false),
                 [HotkeyAction.PlayVoiceAnnouncement] = new(
                     HotkeyModifiers.None,
-                    0x7B)
+                    0x7B),
+                [HotkeyAction.Recalibrate] = new(
+                    HotkeyModifiers.Control,
+                    0x77)
             });
 
     public static IReadOnlyDictionary<HotkeyAction, HotkeyGesture> CreateDefaults() =>

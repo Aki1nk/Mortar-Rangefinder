@@ -55,7 +55,8 @@ public sealed class SettingsServiceTests : IDisposable
             [HotkeyAction.ToggleOverlay] = new(HotkeyModifiers.Control | HotkeyModifiers.Shift, 0x75),
             [HotkeyAction.ToggleClickThrough] = new(HotkeyModifiers.Control | HotkeyModifiers.Windows, 0x76),
             [HotkeyAction.CancelCurrent] = new(HotkeyModifiers.None, 0x1B, IsGlobal: false),
-            [HotkeyAction.PlayVoiceAnnouncement] = new(HotkeyModifiers.None, 0x7B)
+            [HotkeyAction.PlayVoiceAnnouncement] = new(HotkeyModifiers.None, 0x7B),
+            [HotkeyAction.Recalibrate] = new(HotkeyModifiers.Control, 0x77)
         };
         var expected = AppSettings.CreateDefault() with
         {
@@ -765,6 +766,32 @@ public sealed class SettingsServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task LoadAsync_UpgradesExistingSettingsWithRecalibrateHotkey()
+    {
+        var existingHotkeys = HotkeyGesture.CreateDefaults()
+            .Where(pair => pair.Key != HotkeyAction.Recalibrate)
+            .ToDictionary();
+        var existingSettings = AppSettings.CreateDefault() with
+        {
+            Hotkeys = existingHotkeys
+        };
+        var serializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        serializerOptions.Converters.Add(
+            new JsonStringEnumConverter(allowIntegerValues: false));
+        Directory.CreateDirectory(_directory);
+        await File.WriteAllTextAsync(
+            Path.Combine(_directory, "settings.json"),
+            JsonSerializer.Serialize(existingSettings, serializerOptions));
+
+        var settings = await new SettingsService(_directory).LoadAsync();
+
+        Assert.Equal(
+            new HotkeyGesture(HotkeyModifiers.Control, 0x77),
+            settings.Hotkeys[HotkeyAction.Recalibrate]);
+        Assert.Empty(Directory.GetFiles(_directory, "settings.corrupt-*.json"));
+    }
+
+    [Fact]
     public async Task LoadAsync_BacksUpHotkeyStructureWithUndefinedAction()
     {
         Directory.CreateDirectory(_directory);
@@ -815,7 +842,8 @@ public sealed class SettingsServiceTests : IDisposable
             [HotkeyAction.ToggleOverlay] = new(HotkeyModifiers.None, 0x7A),
             [HotkeyAction.ToggleClickThrough] = new(HotkeyModifiers.Control, 0x7A),
             [HotkeyAction.CancelCurrent] = new(HotkeyModifiers.None, 0x1B, IsGlobal: false),
-            [HotkeyAction.PlayVoiceAnnouncement] = new(HotkeyModifiers.None, 0x7B)
+            [HotkeyAction.PlayVoiceAnnouncement] = new(HotkeyModifiers.None, 0x7B),
+            [HotkeyAction.Recalibrate] = new(HotkeyModifiers.Control, 0x77)
         };
 
         AssertHotkeysEqual(expected, hotkeys);
@@ -906,7 +934,8 @@ public sealed class SettingsServiceTests : IDisposable
                 "ToggleOverlay": { "modifiers": {{modifiers}}, "virtualKey": 122, "isGlobal": true },
                 "ToggleClickThrough": { "modifiers": {{modifiers}}, "virtualKey": 122, "isGlobal": true },
                 "CancelCurrent": { "modifiers": {{modifiers}}, "virtualKey": 27, "isGlobal": false },
-                "PlayVoiceAnnouncement": { "modifiers": {{modifiers}}, "virtualKey": 123, "isGlobal": true }
+                "PlayVoiceAnnouncement": { "modifiers": {{modifiers}}, "virtualKey": 123, "isGlobal": true },
+                "Recalibrate": { "modifiers": {{modifiers}}, "virtualKey": 119, "isGlobal": true }
               }
             }
             """;

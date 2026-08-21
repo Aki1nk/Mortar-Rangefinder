@@ -50,6 +50,34 @@ public sealed class RangingControllerTests
         Assert.Equal(RangingState.Ready, controller.State);
     }
 
+    [Fact]
+    public void BeginCalibration_ClearsExistingMeasurementAndGuideLine()
+    {
+        var controller = CreateCalibratedController();
+        controller.RecordMortar(new ScreenPoint(0, 0));
+        controller.RecordTarget(new ScreenPoint(100, 0));
+        Assert.NotNull(controller.LastMeasurement);
+
+        controller.BeginCalibration();
+
+        Assert.Null(controller.LastMeasurement);
+        Assert.Null(controller.GuideSegment);
+        Assert.Equal(RangingState.AwaitingCalibrationFirstPoint, controller.State);
+    }
+
+    [Fact]
+    public void CompletedPointPairs_ExposeGuideSegment()
+    {
+        var controller = CreateCalibratedController();
+        controller.BeginClickMeasurement();
+        controller.RecordPoint(new ScreenPoint(10, 20));
+        controller.RecordPoint(new ScreenPoint(110, 120));
+
+        Assert.Equal(
+            new GuideSegment(new ScreenPoint(10, 20), new ScreenPoint(110, 120)),
+            controller.GuideSegment);
+    }
+
     private static RangingController CreateCalibratedController()
     {
         var controller = new RangingController();

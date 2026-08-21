@@ -80,6 +80,7 @@ public partial class App : System.Windows.Application
         {
             case HotkeyAction.BeginCalibration:
                 _controller.BeginCalibration();
+                _selection.Close();
                 break;
             case HotkeyAction.RecordMortar:
                 if (_controller.State is RangingState.AwaitingCalibrationFirstPoint or RangingState.AwaitingCalibrationSecondPoint)
@@ -90,33 +91,30 @@ public partial class App : System.Windows.Application
                 {
                     _controller.RecordMortar(point);
                 }
+                _selection.SetGuideSegment(_controller.GuideSegment);
                 break;
             case HotkeyAction.RecordTarget:
                 if (_controller.State == RangingState.AwaitingCalibrationSecondPoint)
                 {
                     _controller.RecordPoint(point);
+                    _selection.SetGuideSegment(_controller.GuideSegment);
                     _window?.ShowCalibrationDistancePrompt();
                 }
                 else
                 {
                     _controller.RecordTarget(point);
+                    _selection.SetGuideSegment(_controller.GuideSegment);
                 }
                 break;
             case HotkeyAction.ClearMeasurement:
                 _controller.ClearMeasurement();
+                _selection.Close();
                 break;
             case HotkeyAction.BeginClickSelection:
-                _selection.PointSelected -= OnSelectionPoint;
-                _selection.PointSelected += OnSelectionPoint;
-                if (_controller.Calibration is null)
-                {
-                    _controller.BeginCalibration();
-                }
-                else
-                {
-                    _controller.BeginClickMeasurement();
-                }
-                _selection.Show();
+                BeginPointSelection(forceCalibration: false);
+                break;
+            case HotkeyAction.Recalibrate:
+                BeginPointSelection(forceCalibration: true);
                 break;
             case HotkeyAction.ToggleOverlay:
                 if (_window is not null)
@@ -128,12 +126,29 @@ public partial class App : System.Windows.Application
                 break;
             case HotkeyAction.CancelCurrent:
                 _controller.Cancel();
+                _selection.Close();
                 break;
             case HotkeyAction.PlayVoiceAnnouncement:
                 _voiceAnnouncement.PlayIfEnabled(
                     _settings?.VoiceAnnouncementEnabled ?? false);
                 break;
         }
+    }
+
+    private void BeginPointSelection(bool forceCalibration)
+    {
+        _selection.PointSelected -= OnSelectionPoint;
+        _selection.PointSelected += OnSelectionPoint;
+        if (forceCalibration || _controller.Calibration is null)
+        {
+            _controller.BeginCalibration();
+        }
+        else
+        {
+            _controller.BeginClickMeasurement();
+        }
+
+        _selection.Show();
     }
 
     private async Task ShowSettingsAsync()
@@ -177,16 +192,17 @@ public partial class App : System.Windows.Application
     private void OnSelectionPoint(object? sender, Core.ScreenPoint point)
     {
         var result = _controller.RecordPoint(point);
+        _selection.SetGuideSegment(_controller.GuideSegment);
         if (_controller.State == RangingState.AwaitingCalibrationDistance)
         {
-            _selection.Close();
+            _selection.CloseSelection();
             _window?.ShowCalibrationDistancePrompt();
             return;
         }
 
         if (result is not null)
         {
-            _selection.Close();
+            _selection.CloseSelection();
         }
     }
 }

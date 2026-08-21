@@ -103,7 +103,9 @@ public partial class MainWindow : Window
             RangingState.AwaitingCalibrationSecondPoint => $"移动鼠标到标定点 2，按 {HotkeyText(HotkeyAction.RecordTarget)}",
             RangingState.AwaitingCalibrationDistance => "输入这两个点的实际距离",
             RangingState.AwaitingTargetPoint => $"移动鼠标到目标，按 {HotkeyText(HotkeyAction.RecordTarget)}",
-            _ => $"{HotkeyText(HotkeyAction.BeginClickSelection)} 两次点击标定/测距 | {HotkeyText(HotkeyAction.ClearMeasurement)} 清除"
+            _ => $"{HotkeyText(HotkeyAction.BeginClickSelection)} 两次点击标定/测距 | " +
+                 $"{HotkeyText(HotkeyAction.Recalibrate)} 重新标定 | " +
+                 $"{HotkeyText(HotkeyAction.ClearMeasurement)} 清除"
         };
     }
 

@@ -10,5 +10,6 @@ public enum HotkeyAction
     ToggleOverlay,
     ToggleClickThrough,
     CancelCurrent,
-    PlayVoiceAnnouncement
+    PlayVoiceAnnouncement,
+    Recalibrate
 }

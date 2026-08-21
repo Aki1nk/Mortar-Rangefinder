@@ -19,11 +19,13 @@ $sections = @(
         '打开 PUBG 地图并调整到准备测距时使用的缩放级别。',
         '按默认智能热键 F8，随后在地图上依次点击两个已知实际距离的点。',
         '在弹出的输入框中填写这两个点之间的真实距离（米），完成标定。',
+        '需要重新标定时按默认热键 Ctrl+F8，再依次点击两个标定点。',
         '地图缩放、分辨率、DPI 或显示器排列发生变化后，请重新标定。'
     )},
     @{ Heading = '3. 测距'; Lines = @(
         '完成标定后再次按 F8。',
         '先点击迫击炮位置，再点击目标位置。',
+        '两点之间会显示黄色细虚线，并在 2 秒后自动擦除。',
         '悬浮结果条会显示直线距离、方位角与射程状态。'
     )},
     @{ Heading = '4. 设置与热键'; Lines = @(
@@ -52,7 +54,7 @@ function Escape-Xml([string]$Value) {
 
 $paragraphs = [System.Collections.Generic.List[string]]::new()
 $paragraphs.Add(('<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="36"/></w:rPr><w:t>') + (Escape-Xml $title) + '</w:t></w:r></w:p>') | Out-Null
-$paragraphs.Add('<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:color w:val="666666"/></w:rPr><w:t>版本 0.1.0 · 2026-08-16 · Windows 10/11 x64</w:t></w:r></w:p>') | Out-Null
+$paragraphs.Add('<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:color w:val="666666"/></w:rPr><w:t>版本 0.2.0 · 2026-08-21 · Windows 10/11 x64</w:t></w:r></w:p>') | Out-Null
 $paragraphs.Add('<w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>') | Out-Null
 
 foreach ($section in $sections) {
@@ -142,7 +144,7 @@ li { margin-bottom: 5px; }
 </head>
 <body>
 <h1>$title</h1>
-<p class="meta">版本 0.1.0 · 2026-08-16 · Windows 10/11 x64</p>
+<p class="meta">版本 0.2.0 · 2026-08-21 · Windows 10/11 x64</p>
 $($htmlSections -join "`n")
 </body>
 </html>

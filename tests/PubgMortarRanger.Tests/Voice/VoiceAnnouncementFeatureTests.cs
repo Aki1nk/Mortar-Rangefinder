@@ -20,6 +20,15 @@ public sealed class VoiceAnnouncementFeatureTests
     }
 
     [Fact]
+    public void Defaults_IncludeRecalibrateHotkey()
+    {
+        Assert.True(Enum.TryParse<HotkeyAction>("Recalibrate", out var action));
+        Assert.Equal(
+            new HotkeyGesture(HotkeyModifiers.Control, 0x77),
+            AppSettings.CreateDefault().Hotkeys[action]);
+    }
+
+    [Fact]
     public void ApplicationAssembly_ProvidesLocalVoiceAnnouncementController()
     {
         var controller = typeof(App).Assembly.GetType(

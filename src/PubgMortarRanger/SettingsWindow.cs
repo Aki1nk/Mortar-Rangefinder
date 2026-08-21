@@ -125,6 +125,7 @@ public sealed class SettingsWindow : Window
         HotkeyAction.ToggleOverlay => "显示/隐藏",
         HotkeyAction.ToggleClickThrough => "鼠标穿透",
         HotkeyAction.PlayVoiceAnnouncement => "语音提示",
+        HotkeyAction.Recalibrate => "重新标定",
         _ => "取消当前操作"
     };
 }

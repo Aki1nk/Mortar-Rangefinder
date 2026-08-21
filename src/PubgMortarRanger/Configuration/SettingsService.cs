@@ -114,25 +114,37 @@ public sealed class SettingsService
     private static AppSettings Upgrade(AppSettings settings)
     {
         if (settings.Hotkeys is null ||
-            settings.Hotkeys.ContainsKey(HotkeyAction.PlayVoiceAnnouncement))
-        {
-            return settings;
-        }
-
-        var existingActions = DefinedHotkeyActions
-            .Where(action => action != HotkeyAction.PlayVoiceAnnouncement)
-            .ToArray();
-
-        if (settings.Hotkeys.Count != existingActions.Length ||
-            existingActions.Any(action => !settings.Hotkeys.ContainsKey(action)) ||
             settings.Hotkeys.Keys.Any(action => !Enum.IsDefined(action)))
         {
             return settings;
         }
 
+        var missingActions = DefinedHotkeyActions
+            .Where(action => !settings.Hotkeys.ContainsKey(action))
+            .ToArray();
+
+        if (missingActions.Length == 0)
+        {
+            return settings;
+        }
+
+        var upgradeableActions = new[]
+        {
+            HotkeyAction.PlayVoiceAnnouncement,
+            HotkeyAction.Recalibrate
+        };
+        if (missingActions.Any(action => !upgradeableActions.Contains(action)) ||
+            settings.Hotkeys.Count + missingActions.Length != DefinedHotkeyActions.Length)
+        {
+            return settings;
+        }
+
         var hotkeys = settings.Hotkeys.ToDictionary();
-        hotkeys[HotkeyAction.PlayVoiceAnnouncement] =
-            HotkeyGesture.CreateDefaults()[HotkeyAction.PlayVoiceAnnouncement];
+        foreach (var action in missingActions)
+        {
+            hotkeys[action] = HotkeyGesture.CreateDefaults()[action];
+        }
+
         return settings with { Hotkeys = hotkeys };
     }
 
